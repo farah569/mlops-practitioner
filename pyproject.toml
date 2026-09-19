@@ -21,3 +21,13 @@ prodml-train = "prodml.train:main"
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+addopts = "--cov=src/prodml --cov-fail-under=70"
+
+[tool.coverage.run]
+omit = [
+    "src/prodml/benchmark.py",
+    "src/prodml/export.py",
+    "src/prodml/train.py"
+]
