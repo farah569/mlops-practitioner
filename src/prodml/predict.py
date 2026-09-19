@@ -1,7 +1,10 @@
 import time
 import pickle
+import logging
 from typing import Any
 from prodml import config
+
+logger = logging.getLogger("prodml")
 
 
 def timed(func):
@@ -9,7 +12,7 @@ def timed(func):
         start = time.time()
         result = func(*args, **kwargs)
         end = time.time()
-        print(f"Execution time for {func.__name__}: {end - start:.4f} seconds")
+        logger.info(f"Execution time for {func.__name__}: {end - start:.4f} seconds")
         return result
 
     return wrapper

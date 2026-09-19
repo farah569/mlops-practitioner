@@ -7,17 +7,20 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from prodml import config
 from prodml import data
 from prodml import features
+from prodml.logging_conf import setup_logging
+
+logger = setup_logging()
 
 
 def main():
-    print("Loading data...")
+    logger.info("Loading data...")
     df = data.load_data()
 
-    print("Cleaning and engineering features...")
+    logger.info("Cleaning and engineering features...")
     df = data.clean_data(df)
     df = features.create_features(df)
 
-    print("Preparing training data...")
+    logger.info("Preparing training data...")
     train_dicts = features.prepare_dictionaries(
         df, config.CATEGORICAL, config.NUMERICAL
     )
@@ -26,23 +29,23 @@ def main():
     X_train = dv.fit_transform(train_dicts)
     y_train = df["duration"].values
 
-    print("Training model...")
+    logger.info("Training model...")
     model = LinearRegression()
     model.fit(X_train, y_train)
 
-    print("Evaluating...")
+    logger.info("Evaluating...")
     y_pred = model.predict(X_train)
     rmse = mean_squared_error(y_train, y_pred) ** 0.5
     mae = mean_absolute_error(y_train, y_pred)
 
-    print(f"Validation RMSE: {rmse:.4f}")
-    print(f"Validation MAE: {mae:.4f}")
+    logger.info(f"Validation RMSE: {rmse:.4f}")
+    logger.info(f"Validation MAE: {mae:.4f}")
 
-    print("Saving model...")
+    logger.info("Saving model...")
     os.makedirs(config.MODEL_DIR, exist_ok=True)
     with open(config.MODEL_PATH, "wb") as f:
         pickle.dump((dv, model), f)
-    print(f"Model saved to {config.MODEL_PATH}")
+    logger.info(f"Model saved to {config.MODEL_PATH}")
 
 
 if __name__ == "__main__":
