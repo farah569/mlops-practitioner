@@ -1,6 +1,7 @@
 import time
 import pickle
 import logging
+import mlflow
 from typing import Any
 from prodml import config
 
@@ -25,19 +26,25 @@ class DurationPredictor:
 
     def load(self):
         with open(config.MODEL_PATH, "rb") as f:
-            self.dv, self.model = pickle.load(f)
+            self.dv, _ = pickle.load(f)
+
+        mlflow.set_tracking_uri(config.env_settings.MLFLOW_TRACKING_URI)
+        logger.info("Loading model from MLflow Registry (Production stage)...")
+        self.model = mlflow.pyfunc.load_model(
+            "models:/ride-duration-predictor/Production"
+        )
 
     @timed
     def predict_one(self, features_dict: dict[str, Any]) -> float:
         if self.model is None:
             self.load()
-        X = self.dv.transform([features_dict])
+        X = self.dv.transform([features_dict]).toarray()
         pred = self.model.predict(X)
         return float(pred[0])
 
     def predict_batch(self, features_list: list[dict[str, Any]]) -> list[float]:
         if self.model is None:
             self.load()
-        X = self.dv.transform(features_list)
+        X = self.dv.transform(features_list).toarray()
         preds = self.model.predict(X)
         return [float(p) for p in preds]
