@@ -1,8 +1,10 @@
-import time
-import pickle
 import logging
-import mlflow
+import pickle
+import time
 from typing import Any
+
+import mlflow
+
 from prodml import config
 
 logger = logging.getLogger("prodml")

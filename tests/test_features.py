@@ -1,5 +1,6 @@
-import pytest
 import pandas as pd
+import pytest
+
 from prodml.features import create_features
 
 

@@ -1,19 +1,18 @@
 import os
-import time
 import pickle
-import xgboost as xgb
-import torch
-import torch.nn as nn
-import optuna
-import mlflow
+import time
+
 import matplotlib.pyplot as plt
+import mlflow
+import optuna
+import torch
+import xgboost as xgb
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+from torch import nn
 
-from prodml import config
-from prodml import data
-from prodml import features
+from prodml import config, data, features
 from prodml.logging_conf import setup_logging
 
 logger = setup_logging()

@@ -1,9 +1,9 @@
+import pickle
+
 import numpy as np
 import onnxruntime as rt
-import pickle
-from prodml import config
-from prodml import data
-from prodml import features
+
+from prodml import config, data, features
 
 
 def test_pickle_onnx_parity():

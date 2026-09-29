@@ -1,11 +1,12 @@
 import time
 import uuid
-from fastapi import FastAPI, HTTPException, Request
 from contextlib import asynccontextmanager
 
+from fastapi import FastAPI, HTTPException, Request
+
 from prodml.api.schemas import PredictionRequest, PredictionResponse
+from prodml.logging_conf import correlation_id_var, setup_logging
 from prodml.predict import DurationPredictor
-from prodml.logging_conf import setup_logging, correlation_id_var
 
 logger = setup_logging()
 predictor = DurationPredictor()
@@ -68,5 +69,5 @@ def predict(request: PredictionRequest):
             latency_ms=latency,
         )
     except Exception as e:
-        logger.error(f"Prediction failed: {str(e)}")
+        logger.error(f"Prediction failed: {e!s}")
         raise HTTPException(status_code=500, detail="Internal server error")

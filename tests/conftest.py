@@ -1,5 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
+
 from prodml.api.main import app
 from prodml.predict import DurationPredictor
 

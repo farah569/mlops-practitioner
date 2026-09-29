@@ -1,6 +1,6 @@
-import logging
-import json
 import contextvars
+import json
+import logging
 from datetime import datetime
 
 correlation_id_var = contextvars.ContextVar("correlation_id", default="SYSTEM")
