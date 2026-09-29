@@ -16,7 +16,9 @@ dependencies = [
     "xgboost",
     "torch",
     "optuna",
-    "matplotlib"
+    "matplotlib",
+    "onnxruntime",
+    "skl2onnx"
 ]
 
 [project.optional-dependencies]
