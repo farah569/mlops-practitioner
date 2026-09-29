@@ -68,6 +68,6 @@ def predict(request: PredictionRequest):
             correlation_id=correlation_id_var.get(),
             latency_ms=latency,
         )
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Prediction failed: {e!s}")
         raise HTTPException(status_code=500, detail="Internal server error")
