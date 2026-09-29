@@ -1,8 +1,9 @@
 import os
-import pytest
 import pickle
+
 import numpy as np
 import onnxruntime as rt
+import pytest
 
 from prodml import config, data, features
 
