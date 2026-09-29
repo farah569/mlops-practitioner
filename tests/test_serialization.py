@@ -1,11 +1,15 @@
+import os
+import pytest
 import pickle
-
 import numpy as np
 import onnxruntime as rt
 
 from prodml import config, data, features
 
 
+@pytest.mark.skipif(
+    not os.path.exists(config.MODEL_PATH), reason="DVC files missing on CI"
+)
 def test_pickle_onnx_parity():
     df = data.load_data()
     df = data.clean_data(df)
