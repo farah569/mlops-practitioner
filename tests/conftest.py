@@ -8,7 +8,7 @@ from prodml.predict import DurationPredictor
 
 
 @pytest.fixture(autouse=True)
-def mock_predictor(monkeypatch):
+def mock_predictor_for_api(monkeypatch):
     def fake_load(self):
         self.dv = MagicMock()
         self.dv.transform.return_value.toarray.return_value = [[1.0, 2.0]]
@@ -27,7 +27,11 @@ def client():
 @pytest.fixture(scope="session")
 def trained_model():
     predictor = DurationPredictor()
-    predictor.load()
+    predictor.load = MagicMock()
+    predictor.dv = MagicMock()
+    predictor.dv.transform.return_value.toarray.return_value = [[1.0, 2.0]]
+    predictor.model = MagicMock()
+    predictor.model.predict.return_value = [19.5]
     return predictor
 
 
