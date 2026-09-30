@@ -2,7 +2,7 @@ FROM python:3.11-slim AS builder
 WORKDIR /build
 COPY pyproject.toml ./
 COPY src/ ./src/
-RUN pip install --no-cache-dir --prefix=/install .
+RUN pip --default-timeout=100 install --no-cache-dir --prefix=/install .
 
 FROM python:3.11-slim AS runtime
 RUN useradd --create-home --uid 1000 appuser

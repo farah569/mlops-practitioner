@@ -1,10 +1,10 @@
-import time
 import pickle
+import time
+
 import numpy as np
 import onnxruntime as rt
-from prodml import config
-from prodml import data
-from prodml import features
+
+from prodml import config, data, features
 
 
 def run_benchmark():

@@ -1,0 +1,9 @@
+stages:
+  train_model:
+    cmd: python -m prodml.train
+    deps:
+      - data/raw/green_tripdata_2024-01.parquet
+      - src/prodml/train.py
+      - src/prodml/features.py
+    outs:
+      - models/baseline.pkl
