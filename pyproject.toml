@@ -9,7 +9,16 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "pydantic",
-    "pydantic-settings"
+    "pydantic-settings",
+    "mlflow",
+    "boto3",
+    "python-dotenv",
+    "xgboost",
+    "torch",
+    "optuna",
+    "matplotlib",
+    "onnxruntime",
+    "skl2onnx"
 ]
 
 [project.optional-dependencies]

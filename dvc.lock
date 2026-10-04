@@ -1,0 +1,22 @@
+schema: '2.0'
+stages:
+  train_model:
+    cmd: python -m prodml.train
+    deps:
+    - path: data/raw/green_tripdata_2024-01.parquet
+      hash: md5
+      md5: 33f3af0093a4bea95512fbd0df7f1b84
+      size: 1362284
+    - path: src/prodml/features.py
+      hash: md5
+      md5: 0b7542f07fa732fcd64352726fff7549
+      size: 460
+    - path: src/prodml/train.py
+      hash: md5
+      md5: af1cf83aa3290fc42f5077cdcf559a04
+      size: 4137
+    outs:
+    - path: models/baseline.pkl
+      hash: md5
+      md5: daaeca61f8a9dd2d6e87484ffac93c60
+      size: 29387
