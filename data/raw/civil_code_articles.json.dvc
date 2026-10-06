@@ -1,0 +1,5 @@
+outs:
+- md5: d419f38705f94823fd0c6c77b03ca830
+  size: 1181952
+  hash: md5
+  path: civil_code_articles.json
