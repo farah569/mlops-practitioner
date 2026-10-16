@@ -1,13 +1,18 @@
-import os
 import json
+import os
+import shutil
+from functools import lru_cache
+
 from dotenv import load_dotenv
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_core.documents import Document
-from langchain_groq import ChatGroq
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_core.documents import Document
+from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
+from langchain_groq import ChatGroq
+from langfuse.decorators import observe
+
 from prodml import config
 
 load_dotenv()
@@ -15,72 +20,90 @@ load_dotenv()
 JSON_PATH = os.path.join(config.BASE_DIR, "data", "raw", "civil_code_articles.json")
 CHROMA_PATH = os.path.join(config.BASE_DIR, "data", "chroma_db")
 
+EMBEDDING_MODEL = os.getenv(
+    "EMBEDDING_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+)
+LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-oss-20b")
+TOP_K = int(os.getenv("TOP_K", "5"))
+
+
+SYSTEM_PROMPT = (
+    "أنت مساعد قانوني متخصص في القانون المدني المصري. "
+    "أجب باللغة العربية وبالاعتماد حصراً على المواد الواردة في السياق أدناه. "
+    "اذكر رقم المادة التي استندت إليها بصيغة (المادة N). "
+    "ميّز بدقة بين النص القانوني الصريح واستنتاجك منه، "
+    "ولا تنسب إلى أي مادة شرطاً أو حكماً غير وارد في نصها. "
+    "عند وجود عدة مواد ذات صلة، وضّح الشرط الخاص بكل مادة على حدة. "
+    "إذا كانت المادة ملغاة فاذكر ذلك صراحة. "
+    "إذا لم تجد الإجابة في السياق، فقل: "
+    "لم أجد نصاً في المواد المتاحة يجيب عن هذا السؤال.\n\n"
+    "السياق:\n{context}"
+)
+
+
+@lru_cache(maxsize=1)
+def get_embeddings():
+    return HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
+
+
+@lru_cache(maxsize=1)
+def get_db():
+    return Chroma(persist_directory=CHROMA_PATH, embedding_function=get_embeddings())
+
+
+@lru_cache(maxsize=1)
+def get_chain():
+    retriever = get_db().as_retriever(search_kwargs={"k": TOP_K})
+    llm = ChatGroq(model_name=LLM_MODEL, temperature=0.1)
+    prompt = ChatPromptTemplate.from_messages(
+        [("system", SYSTEM_PROMPT), ("human", "{input}")]
+    )
+    doc_prompt = PromptTemplate.from_template("المادة {article_number}: {page_content}")
+    qa_chain = create_stuff_documents_chain(llm, prompt, document_prompt=doc_prompt)
+    return create_retrieval_chain(retriever, qa_chain)
+
 
 def build_vector_db():
     print("Loading JSON data...")
-    with open(JSON_PATH, "r", encoding="utf-8") as file:
-        articles = json.load(file)
+    with open(JSON_PATH, "r", encoding="utf-8") as f:
+        articles = json.load(f)
 
-    docs = []
-    for article in articles:
-        doc = Document(
-            page_content=article["text_ar"],
+    docs = [
+        Document(
+            page_content=a["text_ar"],
             metadata={
-                "article_number": article["article_number"],
-                "citation": article["citation"],
+                "article_number": a["article_number"],
+                "citation": a["citation"],
+                "is_repealed": a.get("is_repealed", False),
             },
         )
-        docs.append(doc)
+        for a in articles
+    ]
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    if os.path.exists(CHROMA_PATH):
+        shutil.rmtree(CHROMA_PATH)
+    for fn in (get_db, get_chain):
+        fn.cache_clear()
+
+    db = Chroma.from_documents(
+        documents=docs, embedding=get_embeddings(), persist_directory=CHROMA_PATH
     )
-    vector_db = Chroma.from_documents(
-        documents=docs, embedding=embeddings, persist_directory=CHROMA_PATH
-    )
-    return vector_db
+    print(f"Indexed {len(docs)} articles with {EMBEDDING_MODEL}")
+    return db
 
 
+@observe()
 def ask_legal_question(question: str):
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-    )
-    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
-
-    retriever = db.as_retriever(search_kwargs={"k": 3})
-
-    llm = ChatGroq(model_name="openai/gpt-oss-20b", temperature=0.1)
-
-    system_prompt = (
-        "أنت محامي مصري خبير في القانون المدني. "
-        "استخدم السياق التالي المقتبس من القانون المدني للإجابة على سؤال المستخدم باللغة العربية.\n\n"
-        "السياق:\n{context}"
-    )
-
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", system_prompt),
-            ("human", "{input}"),
-        ]
-    )
-
-    question_answer_chain = create_stuff_documents_chain(llm, prompt)
-    rag_chain = create_retrieval_chain(retriever, question_answer_chain)
-
-    print(f"\nThinking about: '{question}'...\n")
-    response = rag_chain.invoke({"input": question})
-
-    return response
+    return get_chain().invoke({"input": question})
 
 
 if __name__ == "__main__":
-    my_question = "ما هي شروط إبطال العقد؟"
+    import sys
 
-    result = ask_legal_question(my_question)
-
-    print("\n--- الإجابة ---")
-    print(result["answer"])
-
-    print("\n--- المصادر اللي جاب منها الإجابة ---")
-    for doc in result["context"]:
-        print(f"- {doc.metadata['citation']}")
+    if len(sys.argv) > 1 and sys.argv[1] == "build":
+        build_vector_db()
+    else:
+        result = ask_legal_question("هل يجوز للقاضي تعديل العقد؟")
+        print(result["answer"])
+        for d in result["context"]:
+            print(d.metadata["citation"])
