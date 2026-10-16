@@ -36,6 +36,19 @@ def extract_text_from_pdf(pdf_path):
 
 LATIN_WORD = re.compile(r"[A-Za-z]{3,}")
 
+AR = r"\u0621-\u064A"
+
+
+def fix_arabic_ligatures(t):
+    """PDF extraction reverses lam-alef ligatures (لا -> ال). Repair the common cases."""
+    t = re.sub(rf"(?<![{AR}])([وفبكل]?)ال(?![{AR}])", r"\1لا", t)
+    t = re.sub(rf"(?<![{AR}])([وف]?)اال(?![{AR}])", r"\1إلا", t)
+    t = re.sub(rf"(?<![{AR}])([وف]?)([إأ])ال(?![{AR}])", r"\1\2لا", t)
+    t = re.sub(rf"(?<![{AR}])ألن(?![{AR}])", "لأن", t)
+    t = re.sub(rf"(?<![{AR}])([وفبكل]?)ا([أآإ])ل", r"\1ال\2", t)
+    t = re.sub(rf"(?<![{AR}])([وفبكل]?)اال(?=[{AR}])", r"\1الا", t)
+    return t
+
 
 def parse_text_to_json(full_text):
     heads = list(AR_HEADER.finditer(full_text))
@@ -62,6 +75,7 @@ def parse_text_to_json(full_text):
             text_ar, text_en = rest, ""
 
         text_ar = AR_STOP.split(text_ar)[0].strip()
+        text_ar = fix_arabic_ligatures(text_ar)
         text_en = EN_STOP.split(text_en)[0].strip()
         if len(text_ar) < 10:
             print(f"[warn] article {number}: empty Arabic text, skipped")

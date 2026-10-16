@@ -92,9 +92,15 @@ def build_vector_db():
     return db
 
 
+EMPTY_FALLBACK = "لم أجد نصاً في المواد المتاحة يجيب عن هذا السؤال."
+
+
 @observe()
 def ask_legal_question(question: str):
-    return get_chain().invoke({"input": question})
+    result = get_chain().invoke({"input": question})
+    if not result.get("answer", "").strip():
+        result["answer"] = EMPTY_FALLBACK
+    return result
 
 
 if __name__ == "__main__":
