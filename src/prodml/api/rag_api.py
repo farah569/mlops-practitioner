@@ -46,6 +46,7 @@ def ask(request: QuestionRequest):
         logger.exception("ask failed")
         raise HTTPException(status_code=500, detail="Internal error")
 
+    # keep relevance order, drop duplicates
     sources = list(dict.fromkeys(d.metadata["citation"] for d in result["context"]))
     return AnswerResponse(
         answer=result["answer"],
