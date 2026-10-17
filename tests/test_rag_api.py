@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from langchain_core.documents import Document
 
-import prodml.api.rag_api as rag_api
+from prodml.api import rag_api
 
 client = TestClient(rag_api.app)
 

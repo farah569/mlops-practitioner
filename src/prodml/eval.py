@@ -1,14 +1,12 @@
-"""RAGAS evaluation over data/eval/questions.json.
-"""
+"""RAGAS evaluation over data/eval/questions.json."""
 
 import argparse
 import json
 import math
 import os
 import time
+
 import mlflow
-
-
 from datasets import Dataset
 from dotenv import load_dotenv
 from langchain_community.embeddings import HuggingFaceEmbeddings

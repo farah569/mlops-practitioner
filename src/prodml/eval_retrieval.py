@@ -1,5 +1,4 @@
-"""Retrieval-only evaluation (no judge LLM, instant, deterministic).
-"""
+"""Retrieval-only evaluation (no judge LLM, instant, deterministic)."""
 
 import argparse
 import json
