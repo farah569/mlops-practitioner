@@ -20,3 +20,36 @@ stages:
       hash: md5
       md5: daaeca61f8a9dd2d6e87484ffac93c60
       size: 29387
+  ingest:
+    cmd: python -m prodml.ingest
+    deps:
+    - path: data/raw/egyptian_civil_code.pdf
+      hash: md5
+      md5: 5086ef5f16f15d856278db943e58e948
+      size: 2599703
+    - path: src/prodml/ingest.py
+      hash: md5
+      md5: c56d443d9101d9c94fabdfe6bd0dafc3
+      size: 4500
+    outs:
+    - path: data/raw/civil_code_articles.json
+      hash: md5
+      md5: b06ac6b65643bd5eaa322b0a0070c3c0
+      size: 1085272
+  build_index:
+    cmd: python -m prodml.llm build
+    deps:
+    - path: data/raw/civil_code_articles.json
+      hash: md5
+      md5: b06ac6b65643bd5eaa322b0a0070c3c0
+      size: 1085272
+    - path: src/prodml/llm.py
+      hash: md5
+      md5: ef7374d61dad31d84e7551b797c4679c
+      size: 4073
+    outs:
+    - path: data/chroma_db
+      hash: md5
+      md5: 07b92c142eff2568ce25f39cd426de23.dir
+      size: 14551880
+      nfiles: 6

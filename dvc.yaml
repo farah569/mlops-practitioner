@@ -7,3 +7,17 @@ stages:
       - src/prodml/features.py
     outs:
       - models/baseline.pkl
+  ingest:
+    cmd: python -m prodml.ingest
+    deps:
+      - src/prodml/ingest.py
+      - data/raw/egyptian_civil_code.pdf
+    outs:
+      - data/raw/civil_code_articles.json
+  build_index:
+    cmd: python -m prodml.llm build
+    deps:
+      - src/prodml/llm.py
+      - data/raw/civil_code_articles.json
+    outs:
+      - data/chroma_db
