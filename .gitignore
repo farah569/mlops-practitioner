@@ -220,3 +220,5 @@ __marimo__/
 *.tfstate*
 .terraform/
 reports/ragas_scores.csv
+mlflow.db
+mlruns/
