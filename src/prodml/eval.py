@@ -6,6 +6,8 @@ import json
 import math
 import os
 import time
+import mlflow
+
 
 from datasets import Dataset
 from dotenv import load_dotenv
@@ -87,6 +89,22 @@ def run_evaluation(ci_only=False, limit=None):
         if not math.isnan(mean_val):
             lf.score(name=f"ragas_{m}", value=float(mean_val))
     lf.flush()
+    mlflow.set_experiment("egyptian_civil_rag_ragas")
+    with mlflow.start_run(run_name="ragas-bge-m3-whole"):
+        mlflow.log_params(
+            {
+                "judge_model": JUDGE_MODEL,
+                "judge_effort": JUDGE_EFFORT,
+                "n_questions": len(df),
+                "embedding_model": os.getenv("EMBEDDING_MODEL", "default"),
+            }
+        )
+        for m in METRIC_NAMES:
+            mean_val = df[m].mean()
+            if not math.isnan(mean_val):
+                mlflow.log_metric(m, float(mean_val))
+            mlflow.log_metric(f"{m}_nan", int(df[m].isna().sum()))
+        mlflow.log_artifact(REPORT_PATH)
 
 
 if __name__ == "__main__":
