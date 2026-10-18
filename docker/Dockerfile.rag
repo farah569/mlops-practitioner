@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src \
+    HF_HOME=/hf-cache
+
+RUN useradd --create-home --uid 1000 appuser \
+    && mkdir -p /hf-cache /app/data \
+    && chown -R appuser:appuser /hf-cache /app
+
+WORKDIR /app
+
+COPY requirements-rag.txt ./
+RUN pip --default-timeout=200 install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu \
+    && pip --default-timeout=200 install --no-cache-dir -r requirements-rag.txt
+
+COPY --chown=appuser:appuser src/ ./src/
+
+USER appuser
+EXPOSE 8000
+
+# تحميل bge-m3 في الذاكرة بياخد وقت، فنديه فترة سماح
+HEALTHCHECK --interval=30s --timeout=5s --start-period=180s --retries=5 \
+  CMD python -c "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"
+
+CMD ["uvicorn","prodml.api.rag_api:app","--host","0.0.0.0","--port","8000"]

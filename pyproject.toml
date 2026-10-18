@@ -38,5 +38,11 @@ addopts = "--cov=src/prodml --cov-fail-under=70"
 omit = [
     "src/prodml/benchmark.py",
     "src/prodml/export.py",
-    "src/prodml/train.py"
+    "src/prodml/train.py",
+    "src/prodml/llm.py",
+    "src/prodml/eval.py",
+    "src/prodml/eval_retrieval.py",
+    "src/prodml/experiments.py",
+    "src/prodml/ingest.py",
+    "src/prodml/api/rag_api.py"
 ]

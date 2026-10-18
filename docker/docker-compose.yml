@@ -11,6 +11,21 @@ services:
     env_file:
       - ../.env
 
+  rag:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.rag
+    ports:
+      - "8001:8000"
+    env_file:
+      - ../.env
+    environment:
+      EMBEDDING_MODEL: BAAI/bge-m3
+    volumes:
+      - ../data/chroma_db:/app/data/chroma_db
+      - ${HOME}/.cache/huggingface:/hf-cache
+    restart: unless-stopped
+
   postgres:
     image: postgres:14-alpine
     environment:

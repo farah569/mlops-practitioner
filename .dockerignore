@@ -1,7 +1,13 @@
-.git
+cat >> .dockerignore <<'EOF'
 .venv
-notebooks/
-data/
-tests/
+.git
+.env
+data
+mlruns
+mlflow.db
+reports
 __pycache__
-*.ipynb
+*.pyc
+.pytest_cache
+.dvc/cache
+EOF
