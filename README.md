@@ -27,6 +27,18 @@ dvc pull
 docker compose -f docker/docker-compose.yml up -d --build rag
 ```
 
+**Running without my local MinIO (reviewers).** The DVC remote is a MinIO on the author's machine, so `dvc pull` (step 2) only works there. On any other machine skip steps 1-2 and use the data bundle published as a GitHub Release (PDF, parsed articles and Chroma index, about 13 MB):
+
+```bash
+cp .env.example .env     # then fill in GROQ_API_KEY and the LANGFUSE_* keys (free tiers)
+curl -L https://github.com/farah569/mlops-practitioner/releases/download/data-v1/reviewer_data.tar.gz -o reviewer_data.tar.gz
+tar xzf reviewer_data.tar.gz     # creates data/raw/ and data/chroma_db/
+mkdir -p ~/.cache/huggingface    # Hugging Face cache mounted by the container
+docker compose -f docker/docker-compose.yml up -d --build rag
+```
+
+Requirements: no GPU needed; Docker with Compose; port 8001 free.
+
 Try it:
 
 ```bash
