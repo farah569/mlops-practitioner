@@ -6,13 +6,13 @@ A Retrieval-Augmented Generation system that answers questions in Arabic (and En
 
 ## Quickstart (3 commands)
 
-Prerequisites: Docker, Python 3.10+ with the project venv (for `dvc`), and a `.env` file at the repo root (never committed) with:
+Prerequisites: Docker, Python 3.10+ with the project venv (for `dvc`), and a `.env` file at the repo root (never committed). Create it with `cp .env.example .env` and fill in the values:
 
 ```
 GROQ_API_KEY=...
 LANGFUSE_PUBLIC_KEY=...
 LANGFUSE_SECRET_KEY=...
-LANGFUSE_HOST=https://cloud.langfuse.com
+LANGFUSE_BASE_URL=https://cloud.langfuse.com
 EMBEDDING_MODEL=BAAI/bge-m3
 ```
 
